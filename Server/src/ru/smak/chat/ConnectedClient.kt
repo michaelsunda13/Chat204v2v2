@@ -3,32 +3,16 @@ package ru.smak.chat
 import java.io.PrintWriter
 import java.net.Socket
 import java.util.*
-import javax.annotation.processing.Messager
 import kotlin.concurrent.thread
 
-class Client(
-    val host: String,
-    val port: Int,
-) {
+class ConnectedClient(val socket: Socket) {
 
     private var isRunning = true
-    private val socket = Socket(host, port)
     private val reader = Scanner(socket.getInputStream())
     private val writer = PrintWriter(socket.getOutputStream())
 
-    init {
-
+    init{
         startMessageAccepting()
-
-        while(isRunning) {
-            val userScanner = Scanner(System.`in`)
-            val userInput = userScanner.nextLine()
-            if (userInput.isNotBlank())
-                sendMessage(userInput)
-            else
-                stop()
-        }
-        socket.close()
     }
 
     private fun startMessageAccepting(){
@@ -43,13 +27,14 @@ class Client(
         }
     }
 
-    private fun parse(message: String){
-        println(message)
-    }
-
     fun sendMessage(message: String){
         writer.println(message)
         writer.flush()
+    }
+
+    private fun parse(message: String){
+        println("Клиент хотел сказать: $message")
+        sendMessage(message)
     }
 
     fun stop(){
