@@ -11,35 +11,19 @@ class Client(
     val port: Int,
 ) {
 
-    private var isRunning = true
-    private val socket = Socket(host, port)
-    private val reader = Scanner(socket.getInputStream())
-    private val writer = PrintWriter(socket.getOutputStream())
+    private val communicator = Communicator(Socket(host, port))
 
     init {
 
-        startMessageAccepting()
+        communicator.start(::parse)
 
-        while(isRunning) {
+        while(communicator.isRunning) {
             val userScanner = Scanner(System.`in`)
             val userInput = userScanner.nextLine()
             if (userInput.isNotBlank())
-                sendMessage(userInput)
+                communicator.sendMessage(userInput)
             else
                 stop()
-        }
-        socket.close()
-    }
-
-    private fun startMessageAccepting(){
-        thread {
-            while (isRunning){
-                try {
-                    val message = reader.nextLine()
-                    parse(message)
-                } catch (_: Throwable){}
-            }
-            socket.close()
         }
     }
 
@@ -47,12 +31,7 @@ class Client(
         println(message)
     }
 
-    fun sendMessage(message: String){
-        writer.println(message)
-        writer.flush()
-    }
-
     fun stop(){
-        isRunning = false
+        communicator.stop()
     }
 }

@@ -7,37 +7,17 @@ import kotlin.concurrent.thread
 
 class ConnectedClient(val socket: Socket) {
 
-    private var isRunning = true
-    private val reader = Scanner(socket.getInputStream())
-    private val writer = PrintWriter(socket.getOutputStream())
+    private val communicator = Communicator(socket)
 
     init{
-        startMessageAccepting()
-    }
-
-    private fun startMessageAccepting(){
-        thread {
-            while (isRunning){
-                try {
-                    val message = reader.nextLine()
-                    parse(message)
-                } catch (_: Throwable){}
-            }
-            socket.close()
-        }
-    }
-
-    fun sendMessage(message: String){
-        writer.println(message)
-        writer.flush()
+        communicator.start { message -> parse(message) }
     }
 
     private fun parse(message: String){
-        println("Клиент хотел сказать: $message")
-        sendMessage(message)
+        communicator.sendMessage(message)
     }
 
     fun stop(){
-        isRunning = false
+        communicator.stop()
     }
 }
