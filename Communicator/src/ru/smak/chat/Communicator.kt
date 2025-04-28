@@ -43,6 +43,7 @@ class Communicator(
 
     fun stop(){
         isRunning = false
+        sendMessage("/leave")
         socket.close()
     }
 
